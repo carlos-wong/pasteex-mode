@@ -159,14 +159,20 @@
   (cond
    ((string-equal major-mode "markdown-mode") (format "![%s](%s)" display-name file-path))
    ((string-equal major-mode "gfm-mode") (format "![%s](%s)" display-name file-path))
+   ((string-equal major-mode "latex-mode") (format "\\begin{figure}[htbp]
+\\centering
+\\includegraphics[width=0.6\\textwidth]{%s}
+\\caption{%s}
+\\label{fig:%s}
+\\end{figure}" file-path display-name display-name))
    ((string-equal major-mode "org-mode") (progn
-					   (if (string-empty-p display-name)
-					       (format "[[%s]]" file-path)
-					     (format "[[%s][%s]]" file-path display-name))))
+					                                 (if (string-empty-p display-name)
+					                                     (format "[[%s]]" file-path)
+					                                   (format "[[%s][%s]]" file-path display-name))))
    (t (progn
-	(if (string-empty-p display-name)
-	  file-path
-	(format "%s: %s" display-name file-path))))))
+	      (if (string-empty-p display-name)
+	          file-path
+	        (format "%s: %s" display-name file-path))))))
 
 (defun pasteex-is-png-file (file-path)
   "Check a file is png file or not."
@@ -208,6 +214,8 @@
 (add-hook 'org-mode-hook 'pasteex-mode)
 ;;;###autoload
 (add-hook 'markdown-mode-hook 'pasteex-mode)
+
+(add-hook 'latex-mode-hook 'pasteex-mode)
 
 (provide 'pasteex-mode)
 ;;; pasteex-mode.el ends here
