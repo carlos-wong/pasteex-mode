@@ -127,9 +127,9 @@
   (unless (buffer-file-name)
     (user-error "Current buffer is not related to any file."))
   ;; make img dir if not exists
-  (setq img-dir (concatenate 'string (file-name-directory (buffer-file-name)) "img/"))
+  (setq img-dir (concatenate 'string "~/Documents/leju/leju_prj/images" "/" (format-time-string "%Y") "/" (format-time-string "%m") "/" (format-time-string "%d") "/"))
   (unless (file-directory-p img-dir)
-    (make-directory img-dir))
+    (dired-create-directory img-dir))
   ;; build image file name (use `pasteex_screenshot' as prefix, following buffer name, following datetime string)
   (setq img-file-name (format "scr_%s_%s.png" (file-name-base (buffer-file-name)) (format-time-string "%Y%m%d%H%M%S")))
   (setq full-img-path (concatenate 'string img-dir img-file-name))
@@ -144,7 +144,7 @@
     (shell-command shell-command-str)
     )
   
-  (setq relative-img-file-path (concatenate 'string "./img/" img-file-name))
+  (setq relative-img-file-path full-img-path)
   ;; check is png file or not
   (unless (pasteex-is-png-file relative-img-file-path)
     ;; delete the generated file
