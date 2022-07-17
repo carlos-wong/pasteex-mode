@@ -112,11 +112,6 @@
   :type 'string
   :group 'pasteex)
 
-(defcustom pasteex-default-image-path nil
-  "Pasteex executable file path."
-  :type 'string
-  :group 'pasteex)
-
 (defun pasteex-image ()
   "Save clipboard image to disk file, and insert file path to current point."
   (interactive)
@@ -132,7 +127,7 @@
   (unless (buffer-file-name)
     (user-error "Current buffer is not related to any file."))
   ;; make img dir if not exists
-  (setq img-dir (concatenate 'string pasteex-default-image-path "/" (format-time-string "%Y") "/" (format-time-string "%m") "/" (format-time-string "%d") "/"))
+  (setq img-dir (concatenate 'string "~/Documents/leju/leju_prj/images" "/" (format-time-string "%Y") "/" (format-time-string "%m") "/" (format-time-string "%d") "/"))
   (unless (file-directory-p img-dir)
     (dired-create-directory img-dir))
   ;; build image file name (use `pasteex_screenshot' as prefix, following buffer name, following datetime string)
