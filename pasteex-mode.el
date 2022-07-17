@@ -129,14 +129,14 @@
    )
   
   ;; check if buffer has a file name
-  ;; (unless (buffer-file-name)
-  ;;   (user-error "Current buffer is not related to any file."))
+  (unless (buffer-file-name)
+    (user-error "Current buffer is not related to any file."))
   ;; make img dir if not exists
   (setq img-dir (concatenate 'string pasteex-default-image-path "/" (format-time-string "%Y") "/" (format-time-string "%m") "/" (format-time-string "%d") "/"))
   (unless (file-directory-p img-dir)
     (dired-create-directory img-dir))
   ;; build image file name (use `pasteex_screenshot' as prefix, following buffer name, following datetime string)
-  (setq img-file-name (format "scr_%s.png" (format-time-string "%Y%m%d%H%M%S")))
+  (setq img-file-name (format "scr_%s_%s.png" (file-name-base (buffer-file-name)) (format-time-string "%Y%m%d%H%M%S")))
   (setq full-img-path (concatenate 'string img-dir img-file-name))
   ;; save image file to img-dir by invoking pasteex executable command
   (let* ((shell-command-str ""))
