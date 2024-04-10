@@ -120,7 +120,7 @@
    ((eq system-type 'windows-nt) (unless (executable-find pasteex-executable-path)
                                    (user-error "You need to add `pasteex' executable to environment PATH, or set `pasteex-executable-path' value.")))
    ((eq system-type 'darwin) (unless (executable-find pasteex-macos-executable-path)
-                                   (user-error "You need to add `pasteex' executable to environment PATH, or set `pasteex-executable-path' value.")))
+                               (user-error "You need to add `pasteex' executable to environment PATH, or set `pasteex-executable-path' value.")))
    )
   
   ;; check if buffer has a file name
@@ -136,8 +136,10 @@
   ;; save image file to img-dir by invoking pasteex executable command
   (let* ((shell-command-str ""))
     (cond
-     ((eq system-type 'darwin) (setq shell-command-str (format "%s - > %s%s" pasteex-macos-executable-path img-dir img-file-name)) )
-     ((eq system-type 'windows-nt) (setq shell-command-str (format "%s -q %s" pasteex-executable-path full-img-path)))
+     ((eq system-type 'darwin)
+      (setq shell-command-str (format "%s - | convert - -background none -alpha remove -alpha off -flatten %s%s" pasteex-macos-executable-path img-dir img-file-name)))
+     ((eq system-type 'windows-nt)
+      (setq shell-command-str (format "%s -q | convert - -background none -alpha remove -alpha off -flatten %s" pasteex-executable-path full-img-path)))
      (t (user-error "Only Support Macos and Windows")))
     (message "shell command str is:%s" shell-command-str)
 
@@ -154,6 +156,7 @@
   (setq display-name (read-string "Input a display name (default empty): "))
   ;; insert image file path (relative path)
   (insert (pasteex-build-img-file-insert-path relative-img-file-path display-name)))
+
 
 (defun pasteex-build-img-file-insert-path (file-path display-name)
   "Build image file path that to insert to current point."
