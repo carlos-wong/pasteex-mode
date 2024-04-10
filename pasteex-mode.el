@@ -126,36 +126,44 @@
   ;; check if buffer has a file name
   (unless (buffer-file-name)
     (user-error "Current buffer is not related to any file."))
-  ;; make img dir if not exists
-  (setq img-dir (concatenate 'string (file-name-directory (buffer-file-name)) "img/"))
-  (unless (file-directory-p img-dir)
-    (make-directory img-dir))
-  ;; build image file name (use `pasteex_screenshot' as prefix, following buffer name, following datetime string)
-  (setq img-file-name (format "scr_%s_%s.png" (file-name-base (buffer-file-name)) (format-time-string "%Y%m%d%H%M%S")))
-  (setq full-img-path (concatenate 'string img-dir img-file-name))
-  ;; save image file to img-dir by invoking pasteex executable command
-  (let* ((shell-command-str ""))
-    (cond
-     ((eq system-type 'darwin)
-      (setq shell-command-str (format "%s - | convert - -background none -alpha remove -alpha off -flatten %s%s" pasteex-macos-executable-path img-dir img-file-name)))
-     ((eq system-type 'windows-nt)
-      (setq shell-command-str (format "%s -q | convert - -background none -alpha remove -alpha off -flatten %s" pasteex-executable-path full-img-path)))
-     (t (user-error "Only Support Macos and Windows")))
-    (message "shell command str is:%s" shell-command-str)
 
-    (shell-command shell-command-str)
-    )
-  
-  (setq relative-img-file-path (concatenate 'string "./img/" img-file-name))
-  ;; check is png file or not
-  (unless (pasteex-is-png-file relative-img-file-path)
-    ;; delete the generated file
-    (delete-file relative-img-file-path)
-    (user-error "There is no image on clipboard."))
-  ;; image display name
-  (setq display-name (read-string "Input a display name (default empty): "))
-  ;; insert image file path (relative path)
-  (insert (pasteex-build-img-file-insert-path relative-img-file-path display-name)))
+  ;; Attempt to find git root directory using Emacs API, fallback to buffer directory if not found
+  (let* ((git-root (or (vc-git-root (buffer-file-name))
+                       (file-name-directory (buffer-file-name))))
+         (img-dir (concat git-root "docs/imgs/")))
+    ;; make docs/imgs dir if not exists
+    (unless (file-directory-p img-dir)
+      (make-directory img-dir t)) ;; 't' for creating parent directories as needed
+
+    ;; build image file name (use `pasteex_screenshot' as prefix, following buffer name, following datetime string)
+    (setq img-file-name (format "scr_%s_%s.png" (file-name-base (buffer-file-name)) (format-time-string "%Y%m%d%H%M%S")))
+    (setq full-img-path (concat img-dir img-file-name))
+    ;; save image file to img-dir by invoking pasteex executable command
+    (let* ((shell-command-str ""))
+      (cond
+       ((eq system-type 'darwin)
+        (setq shell-command-str (format "%s - | convert - -background none -alpha remove -alpha off -flatten %s" pasteex-macos-executable-path full-img-path)))
+       ((eq system-type 'windows-nt)
+        (setq shell-command-str (format "%s -q | convert - -background none -alpha remove -alpha off -flatten %s" pasteex-executable-path full-img-path)))
+       (t (user-error "Only Support Macos and Windows")))
+      (message "shell command str is:%s" shell-command-str)
+
+      (shell-command shell-command-str)
+      )
+    
+    ;; Adjust relative path based on git root or buffer directory
+    (setq relative-img-file-path (format "./%s" (file-relative-name full-img-path (file-name-directory (buffer-file-name)))))
+    ;; check is png file or not
+    (unless (pasteex-is-png-file relative-img-file-path)
+      ;; delete the generated file
+      (delete-file relative-img-file-path)
+      (user-error "There is no image on clipboard."))
+    ;; image display name
+    (setq display-name (read-string "Input a display name (default empty): "))
+    ;; insert image file path (relative path)
+    (insert (pasteex-build-img-file-insert-path relative-img-file-path display-name))))
+
+
 
 
 (defun pasteex-build-img-file-insert-path (file-path display-name)
