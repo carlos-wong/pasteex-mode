@@ -130,8 +130,9 @@
   ;; Attempt to find git root directory using Emacs API, fallback to buffer directory if not found
   (let* ((git-root (or (vc-git-root (buffer-file-name))
                        (file-name-directory (buffer-file-name))))
-         (img-dir (concat git-root "docs/imgs/")))
-    ;; make docs/imgs dir if not exists
+         ;; Update img-dir to include year and month in the path
+         (img-dir (concat git-root "docs/imgs/" (format-time-string "%Y/%m/") )))
+    ;; make docs/imgs/year/month dir if not exists
     (unless (file-directory-p img-dir)
       (make-directory img-dir t)) ;; 't' for creating parent directories as needed
 
@@ -162,6 +163,7 @@
     (setq display-name (read-string "Input a display name (default empty): "))
     ;; insert image file path (relative path)
     (insert (pasteex-build-img-file-insert-path relative-img-file-path display-name))))
+
 
 
 
