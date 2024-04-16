@@ -136,33 +136,35 @@
     (unless (file-directory-p img-dir)
       (make-directory img-dir t)) ;; 't' for creating parent directories as needed
 
-    ;; build image file name (use `pasteex_screenshot' as prefix, following buffer name, following datetime string)
-    (setq img-file-name (format "scr_%s_%s.png" (file-name-base (buffer-file-name)) (format-time-string "%Y%m%d%H%M%S")))
-    (setq full-img-path (concat img-dir img-file-name))
-    ;; save image file to img-dir by invoking pasteex executable command
-    (let* ((shell-command-str ""))
-      (cond
-       ((eq system-type 'darwin)
-        (setq shell-command-str (format "%s - | convert - -background none -alpha remove -alpha off -flatten %s" pasteex-macos-executable-path full-img-path)))
-       ((eq system-type 'windows-nt)
-        (setq shell-command-str (format "%s -q | convert - -background none -alpha remove -alpha off -flatten %s" pasteex-executable-path full-img-path)))
-       (t (user-error "Only Support Macos and Windows")))
-      (message "shell command str is:%s" shell-command-str)
+    ;; build image file name with UUID (use `pasteex_screenshot' as prefix, following buffer name, following datetime string)
+    (let ((uuid (shell-command-to-string "uuidgen"))) ;; Generate UUID
+      (setq img-file-name (format "%s_%s_%s.png" (string-trim uuid) (file-name-base (buffer-file-name)) (format-time-string "%Y%m%d%H%M%S")))
+      (setq full-img-path (concat img-dir img-file-name))
+      ;; save image file to img-dir by invoking pasteex executable command
+      (let* ((shell-command-str ""))
+        (cond
+         ((eq system-type 'darwin)
+          (setq shell-command-str (format "%s - | convert - -background none -alpha remove -alpha off -flatten %s" pasteex-macos-executable-path full-img-path)))
+         ((eq system-type 'windows-nt)
+          (setq shell-command-str (format "%s -q | convert - -background none -alpha remove -alpha off -flatten %s" pasteex-executable-path full-img-path)))
+         (t (user-error "Only Support Macos and Windows")))
+        (message "shell command str is:%s" shell-command-str)
 
-      (shell-command shell-command-str)
-      )
-    
-    ;; Adjust relative path based on git root or buffer directory
-    (setq relative-img-file-path (format "./%s" (file-relative-name full-img-path (file-name-directory (buffer-file-name)))))
-    ;; check is png file or not
-    (unless (pasteex-is-png-file relative-img-file-path)
-      ;; delete the generated file
-      (delete-file relative-img-file-path)
-      (user-error "There is no image on clipboard."))
-    ;; image display name
-    (setq display-name (read-string "Input a display name (default empty): "))
-    ;; insert image file path (relative path)
-    (insert (pasteex-build-img-file-insert-path relative-img-file-path display-name))))
+        (shell-command shell-command-str)
+        )
+      
+      ;; Adjust relative path based on git root or buffer directory
+      (setq relative-img-file-path (format "./%s" (file-relative-name full-img-path (file-name-directory (buffer-file-name)))))
+      ;; check is png file or not
+      (unless (pasteex-is-png-file relative-img-file-path)
+        ;; delete the generated file
+        (delete-file relative-img-file-path)
+        (user-error "There is no image on clipboard."))
+      ;; image display name
+      (setq display-name (read-string "Input a display name (default empty): "))
+      ;; insert image file path (relative path)
+      (insert (pasteex-build-img-file-insert-path relative-img-file-path display-name)))))
+
 
 
 
